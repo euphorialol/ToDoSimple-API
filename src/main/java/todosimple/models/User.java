@@ -7,9 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Objects;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 
 @Entity
@@ -24,7 +22,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true)
-    private long id;
+    private Long id;
 
     @Column(name = "username", length = 100, nullable = false, unique = true)
     @NotNull(groups = CreatUser.class)
@@ -39,7 +37,9 @@ public class User {
     @Size(groups = {CreatUser.class, UpdateUser.class}, min = 6, max = 60)
     private String password;
 
-    // private List<Task> tasks = new ArrayList<Task>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Task> tasks = new ArrayList<Task>();
 
 
     public User() {
@@ -75,23 +75,36 @@ public class User {
         this.password = password;
     }
 
+    public List<Task> getTasks() {
+        return this.tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
+    }
+
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
             return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof User))
+        if (! (obj instanceof User))
             return false;
         User other = (User) obj;
-        return Objects.equals(this.id, other.id) && Objects.equals(this.username, other.username)
-            && Objects.equals(this.password, other.password);
+        if (this.id != null)
+            return false;
+        else if (!this.id.equals(other.getId()))
+            return false;
+        return Objects.equals(this.id, other.id) && Objects.equals(this.username, other.username) && Objects.equals(this.password, other.password);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
         return result;
     }
 }
