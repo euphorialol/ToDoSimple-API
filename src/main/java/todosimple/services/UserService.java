@@ -1,15 +1,19 @@
 package todosimple.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import todosimple.models.User;
 import todosimple.models.enums.ProfileEnum;
 import todosimple.repositories.UserRepository;
+import todosimple.security.UserSpringSecurity;
+import todosimple.services.exceptions.AuthorizationException;
 import todosimple.services.exceptions.DataBindingViolationException;
 import todosimple.services.exceptions.ObjectNotFoundException;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,6 +29,12 @@ public class UserService {
 
 
     public User findByID(Long id) {
+
+        UserSpringSecurity userSpringSecurity = authenticated();
+        if (!Objects.nonNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !id.equals(userSpringSecurity.getId())){
+            throw new AuthorizationException("Acesso negado");
+        }
+
         Optional<User> user = this.userRepository.findById(id);
         return user.orElseThrow(() -> new ObjectNotFoundException(
                 "Usuário não encontrado! Id: " + id + ", Tipo: " + User.class.getName()));
@@ -56,6 +66,14 @@ public class UserService {
         }
         catch (Exception e){
             throw new DataBindingViolationException("não foi possível excluir pois há entidades relacionadas!" + e);
+        }
+    }
+
+    public static UserSpringSecurity authenticated(){
+        try {
+            return (UserSpringSecurity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        } catch (Exception e){
+            return null;
         }
     }
 }
