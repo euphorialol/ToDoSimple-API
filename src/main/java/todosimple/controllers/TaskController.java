@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import todosimple.models.Task;
+import todosimple.models.projection.TaskProjection;
 import todosimple.services.TaskService;
 import todosimple.services.UserService;
 
@@ -56,9 +57,9 @@ public class TaskController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<Task>> findAllByUser(){
+    public ResponseEntity<List<TaskProjection>> findAllByUser(){
 
-        List<Task> objs = this.taskService.findAllByUser();
+        List<TaskProjection> objs = this.taskService.findAllByUser();
         return ResponseEntity.ok().body(objs);
 
     }
